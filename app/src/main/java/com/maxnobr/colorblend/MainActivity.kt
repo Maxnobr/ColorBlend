@@ -1,18 +1,17 @@
+@file:Suppress("CAST_NEVER_SUCCEEDS")
+
 package com.maxnobr.colorblend
 
-import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
-
-import kotlinx.android.synthetic.main.activity_main.*
-import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
+import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.SeekBar
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.util.*
 
@@ -22,16 +21,12 @@ class MainActivity : AppCompatActivity() {
     private var leftColor = Color.RED
     private var rightColor = Color.BLUE
 
+    private var leftChoose = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
-        fab.setOnClickListener { view ->
-            //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-            //        .setAction("Action", null).show()
-            startActivityForResult(Intent("msud.cs3013.ACTION_COLOR"),1)
-        }
 
         seekBar2.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -47,6 +42,31 @@ class MainActivity : AppCompatActivity() {
         textView.setBackgroundColor(leftColor)
         textView3.setBackgroundColor(rightColor)
         blendColors()
+        updateButton(true)
+    }
+
+    fun leftClick(view:View)
+    {
+        updateButton(true)
+    }
+
+    fun rightClick(view:View)
+    {
+        updateButton(false)
+    }
+
+    private fun updateButton(isLeft : Boolean) {
+        leftChoose = isLeft
+        if(isLeft)
+            button.text = "<--Choose Left  Color"
+        else
+            button.text = "   Choose Right Color-->"
+    }
+
+    fun getColor(view:View)
+    {
+        Log.i("SashaLog","Sending intent!")
+        startActivityForResult(Intent("msud.cs3013.ACTION_COLOR"),1)
     }
 
     private fun blendColors()
@@ -59,12 +79,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 1) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                //Log.i("SashaLog",data?.toString())
-
+    if (requestCode == 1 && resultCode == RESULT_OK) {
+            if (leftChoose) {
+                leftColor = Integer.parseInt(data?.data.toString())
+                textView.setBackgroundColor(leftColor)
+                updateButton(false)
+            } else {
+                rightColor = Integer.parseInt(data?.data.toString())
+                textView3.setBackgroundColor(rightColor)
+                updateButton(true)
             }
+            blendColors()
         }
     }
 
